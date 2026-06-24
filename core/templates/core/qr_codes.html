@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+
+{% block title %}كروت QR - E3dady Cup{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-4 sm:mb-6 print:hidden">
+        <h1 class="text-lg sm:text-2xl font-black neon-gold">كروت الـ QR</h1>
+        <div class="flex gap-1.5 sm:gap-2">
+            <a href="{% url 'qr_download_all' %}" class="btn-gold text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">تحميل ZIP</a>
+            <button onclick="window.print()" class="btn-secondary text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">طباعة</button>
+        </div>
+    </div>
+
+    <!-- Team QR Codes -->
+    <h2 class="text-lg font-bold mb-3 text-amber-400 print:text-black">QR الفرق</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6 sm:mb-8 print:grid-cols-4 print:gap-2">
+        {% for t in teams %}
+        {% if t.team_code %}
+        <div class="bg-white text-slate-900 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center print:shadow-none print:border print:border-slate-300"
+             style="border-top: 4px solid {{ t.primary_hex }}">
+            <div class="text-xl sm:text-2xl mb-0.5 sm:mb-1">{{ t.flag_emoji }}</div>
+            <div class="font-black text-xs sm:text-sm">{{ t.name_ar }}</div>
+            <div class="text-[9px] sm:text-[10px] text-purple-600 font-bold mb-0.5 sm:mb-1">فريق كامل</div>
+            <img src="{% url 'qr_team_image' t.team_code %}" alt="QR" class="mx-auto w-full max-w-[120px] sm:max-w-[150px]" loading="lazy">
+            <div class="font-mono text-[9px] sm:text-[10px] mt-0.5 sm:mt-1 text-slate-400">{{ t.team_code }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Individual QR Codes -->
+    <h2 class="text-lg font-bold mb-3 text-white/60 print:text-black">QR الأفراد</h2>
+    <div id="qr-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 print:grid-cols-3 print:gap-2">
+        {% for p in participants %}
+        <div class="bg-white text-slate-900 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center print:shadow-none print:border print:border-slate-300 print:break-inside-avoid"
+             style="border-top: 4px solid {{ p.team.primary_hex }}">
+            <div class="text-xl sm:text-2xl mb-0.5 sm:mb-1">{{ p.team.flag_emoji }}</div>
+            <div class="font-black text-xs sm:text-sm leading-tight">{{ p.name }}</div>
+            <div class="text-[9px] sm:text-[10px] text-slate-400 mb-0.5 sm:mb-1">{{ p.team.name_ar }}</div>
+            <img src="{% url 'qr_image' p.unique_code %}" alt="QR" class="mx-auto w-full max-w-[120px] sm:max-w-[150px]" loading="lazy">
+            <div class="font-mono text-[9px] sm:text-[10px] mt-0.5 sm:mt-1 text-slate-400">{{ p.unique_code }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+@media print {
+    body { background: white !important; }
+    #three-bg, nav, .page-content > nav { display: none !important; }
+    .page-content { z-index: auto; }
+    main { padding: 0 !important; max-width: none !important; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}لوحة التحكم - E3dady Cup{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <h1 class="text-xl sm:text-2xl font-black neon-gold">لوحة التحكم</h1>
+        <a href="{% url 'export_points' %}" class="btn-gold text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4 flex items-center gap-1.5">
+            📊 تحميل Excel
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div class="stat-card text-center p-3 sm:p-5">
+            <div class="text-2xl sm:text-3xl font-black text-blue-400">{{ participants|length }}</div>
+            <div class="text-[10px] sm:text-xs text-white/40 mt-1">مشترك</div>
+        </div>
+        <div class="stat-card text-center p-3 sm:p-5">
+            <div class="text-2xl sm:text-3xl font-black text-amber-400">{{ teams|length }}</div>
+            <div class="text-[10px] sm:text-xs text-white/40 mt-1">فريق</div>
+        </div>
+        <div class="stat-card text-center p-3 sm:p-5">
+            <div class="text-2xl sm:text-3xl font-black text-green-400">{{ activities|length }}</div>
+            <div class="text-[10px] sm:text-xs text-white/40 mt-1">نشاط</div>
+        </div>
+        <div class="stat-card text-center p-3 sm:p-5">
+            <div class="text-2xl sm:text-3xl font-black text-purple-400">
+                {% if active_session %}{{ active_session.activity.label }}{% else %}—{% endif %}
+            </div>
+            <div class="text-[10px] sm:text-xs text-white/40 mt-1">الجلسة الحالية</div>
+        </div>
+    </div>
+
+    <!-- Session Management -->
+    <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
+            <span class="text-amber-400">⚡</span> إدارة الجلسات
+        </h2>
+        <div class="flex flex-col sm:grid sm:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-xs text-white/40 mb-1">ابدأ جلسة جديدة</label>
+                <div class="flex gap-2">
+                    <select id="session-activity" class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm">
+                        {% for a in activities %}
+                        <option value="{{ a.id }}">{{ a.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button onclick="startSession()" class="btn-primary text-sm py-2 px-4">ابدأ</button>
+                </div>
+            </div>
+            <div class="flex items-end">
+                <button onclick="endSession()" class="btn-secondary w-full py-2.5 text-sm">انهي الجلسة</button>
+            </div>
+            <div class="flex items-end">
+                <button onclick="resetCheckmarks()" class="btn-danger text-xs sm:text-sm w-full py-2.5">ريسيت العلامات (بدون مسح النقط)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add participant -->
+    <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
+            <span class="text-green-400">+</span> إضافة مشترك
+        </h2>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <input id="new-name" type="text" placeholder="اسم المشترك..."
+                   class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm">
+            <div class="flex gap-2">
+                <select id="new-team" class="flex-1 sm:flex-none bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm">
+                    {% for t in teams %}
+                    <option value="{{ t.id }}">{{ t.flag_emoji }} {{ t.name_ar }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="addParticipant()" class="btn-primary text-sm py-2 px-4">أضف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participants list -->
+    {% if participants %}
+    <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
+            <span class="text-purple-400">👥</span> المشتركين ({{ participants|length }})
+        </h2>
+        <div class="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+            <table class="w-full text-xs sm:text-sm min-w-[400px]">
+                <thead><tr class="border-b border-white/10 text-white/40">
+                    <th class="text-right py-2 px-1 sm:px-2">الاسم</th>
+                    <th class="text-right py-2 px-1 sm:px-2">الفريق</th>
+                    <th class="text-right py-2 px-1 sm:px-2">الكود</th>
+                    <th class="text-right py-2 px-1 sm:px-2">النقاط</th>
+                    <th class="text-center py-2 px-1 sm:px-2">حذف</th>
+                </tr></thead>
+                <tbody>
+                    {% for p in participants %}
+                    <tr id="participant-row-{{ p.id }}" class="border-b border-white/5 hover:bg-white/[0.02]">
+                        <td class="py-2 px-1 sm:px-2 font-bold">{{ p.name }}</td>
+                        <td class="py-2 px-1 sm:px-2">{{ p.team.flag_emoji }} {{ p.team.name_ar }}</td>
+                        <td class="py-2 px-1 sm:px-2 font-mono text-white/40 text-[10px] sm:text-xs">{{ p.unique_code }}</td>
+                        <td class="py-2 px-1 sm:px-2 font-bold text-amber-400">{{ p.total_points }}</td>
+                        <td class="py-2 px-1 sm:px-2 text-center">
+                            <button onclick="deleteParticipant({{ p.id }}, '{{ p.name }}')"
+                                    class="text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg px-2 py-1 text-xs font-bold transition-colors">✕</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Scan Logs -->
+    <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
+            <span class="text-blue-400">📋</span> سجل المسح
+        </h2>
+        <div class="flex gap-2 mb-3 sm:mb-4 flex-wrap">
+            <select id="log-team" class="flex-1 sm:flex-none bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white text-sm">
+                <option value="">كل الفرق</option>
+                {% for t in teams %}
+                <option value="{{ t.id }}">{{ t.flag_emoji }} {{ t.name_ar }}</option>
+                {% endfor %}
+            </select>
+            <select id="log-location" class="flex-1 sm:flex-none bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white text-sm">
+                <option value="">كل الأماكن</option>
+                <option value="qa3a_1">قاعة 1</option>
+                <option value="qa3a_2">قاعة 2</option>
+                <option value="qa3a_3">قاعة 3</option>
+                <option value="qa3a_4">قاعة 4</option>
+                <option value="qa3a_5">قاعة 5</option>
+                <option value="qa3a_6">قاعة 6</option>
+                <option value="mal3ab_1">ملعب 1</option>
+                <option value="mal3ab_2">ملعب 2</option>
+                <option value="mal3ab_3">ملعب 3</option>
+                <option value="mal3ab_4">ملعب 4</option>
+                <option value="mal3ab_5">ملعب 5</option>
+            </select>
+            <button onclick="filterLogs()" class="btn-secondary text-sm py-2 px-4">فلتر</button>
+        </div>
+        <div id="logs-table" class="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+            <table class="w-full text-xs sm:text-sm min-w-[500px]">
+                <thead><tr class="border-b border-white/10 text-white/40">
+                    <th class="text-right py-2 px-1 sm:px-2">الوقت</th>
+                    <th class="text-right py-2 px-1 sm:px-2">اللاعب</th>
+                    <th class="text-right py-2 px-1 sm:px-2">الفريق</th>
+                    <th class="text-right py-2 px-1 sm:px-2">النقط</th>
+                    <th class="text-right py-2 px-1 sm:px-2">النوع</th>
+                    <th class="text-right py-2 px-1 sm:px-2">المكان</th>
+                </tr></thead>
+                <tbody id="logs-tbody">
+                    {% for l in recent_logs %}
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                        <td class="py-2 px-1 sm:px-2 text-white/40 text-xs">{{ l.created_at|time:"H:i:s" }}</td>
+                        <td class="py-2 px-1 sm:px-2 font-bold">{{ l.participant.name|default:"—" }}</td>
+                        <td class="py-2 px-1 sm:px-2">{{ l.team.name_ar|default:"—" }}</td>
+                        <td class="py-2 px-1 sm:px-2 font-bold {% if l.points_change > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            {{ l.points_change|stringformat:"+d" }}
+                        </td>
+                        <td class="py-2 px-1 sm:px-2 text-xs text-white/40">{{ l.get_session_type_display }}</td>
+                        <td class="py-2 px-1 sm:px-2 text-xs text-white/40">{{ l.get_location_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Teams overview -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        {% for t in teams %}
+        <div class="stat-card p-3 sm:p-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl sm:text-2xl">{{ t.flag_emoji }}</span>
+                <span class="font-black text-sm sm:text-base" style="color:{{ t.primary_hex }}">{{ t.name_ar }}</span>
+            </div>
+            <div class="text-xl sm:text-2xl font-black">{{ t.total_points }} <span class="text-[10px] sm:text-xs text-white/30 font-normal">نقطة</span></div>
+            <div class="text-[10px] sm:text-xs text-white/30 mt-1">{{ t.participants.count }} لاعب</div>
+            {% if t.team_code %}
+            <div class="text-[10px] sm:text-xs text-white/20 mt-1 font-mono">{{ t.team_code }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block inline_data %}
+const CSRF_TOKEN = '{{ csrf_token }}';
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startSession() {
+    var id = document.getElementById('session-activity').value;
+    fetch('/api/session/start/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'activity_id=' + id,
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { YC.showToast('الجلسة بدأت', 'success'); setTimeout(function() { location.reload(); }, 800); }
+        else YC.showToast(d.error, 'error');
+    });
+}
+
+function endSession() {
+    fetch('/api/session/end/', {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF_TOKEN },
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { YC.showToast('الجلسة انتهت', 'success'); setTimeout(function() { location.reload(); }, 800); }
+        else YC.showToast(d.error, 'error');
+    });
+}
+
+function resetCheckmarks() {
+    if (!confirm('متأكد؟ ده هيعمل ريسيت للعلامات بس مش هيأثر على النقط')) return;
+    fetch('/api/session/reset/', {
+        method: 'POST', headers: { 'X-CSRFToken': CSRF_TOKEN },
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { YC.showToast('تم الريسيت', 'success'); setTimeout(function() { location.reload(); }, 800); }
+        else YC.showToast(d.error, 'error');
+    });
+}
+
+function addParticipant() {
+    var name = document.getElementById('new-name').value.trim();
+    var teamId = document.getElementById('new-team').value;
+    if (!name) { YC.showToast('اكتب الاسم', 'error'); return; }
+    fetch('/api/participant/add/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'name=' + encodeURIComponent(name) + '&team_id=' + teamId,
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { YC.showToast('تمت الإضافة', 'success'); document.getElementById('new-name').value = ''; setTimeout(function() { location.reload(); }, 800); }
+        else YC.showToast(d.error, 'error');
+    });
+}
+
+function deleteParticipant(id, name) {
+    if (!confirm('متأكد تحذف ' + name + '؟ ده هيمسح كل النقاط والسجلات بتاعته')) return;
+    fetch('/api/participant/delete/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'participant_id=' + id,
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) {
+            var row = document.getElementById('participant-row-' + id);
+            if (row) row.remove();
+            YC.showToast('تم حذف ' + name, 'success');
+            setTimeout(function() { location.reload(); }, 800);
+        } else YC.showToast(d.error || 'خطأ', 'error');
+    });
+}
+
+function filterLogs() {
+    var team = document.getElementById('log-team').value;
+    var loc = document.getElementById('log-location').value;
+    var url = '/api/logs/?';
+    if (team) url += 'team_id=' + team + '&';
+    if (loc) url += 'location=' + loc;
+    fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+        if (!d.ok) return;
+        var tbody = document.getElementById('logs-tbody');
+        tbody.innerHTML = d.logs.map(function(l) {
+            var cls = l.points_change > 0 ? 'text-green-400' : 'text-red-400';
+            var sign = l.points_change > 0 ? '+' : '';
+            return '<tr class="border-b border-white/5">' +
+                '<td class="py-2 px-2 text-white/40 text-xs">' + l.time + '</td>' +
+                '<td class="py-2 px-2 font-bold">' + (l.participant || '—') + '</td>' +
+                '<td class="py-2 px-2">' + (l.team || '—') + '</td>' +
+                '<td class="py-2 px-2 font-bold ' + cls + '">' + sign + l.points_change + '</td>' +
+                '<td class="py-2 px-2 text-xs text-white/40">' + l.session_type + '</td>' +
+                '<td class="py-2 px-2 text-xs text-white/40">' + l.location + '</td>' +
+            '</tr>';
+        }).join('');
+    });
+}
+</script>
+{% endblock %}

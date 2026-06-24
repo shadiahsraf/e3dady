@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:PYTHONIOENCODING = 'utf-8'; cd D:\\\\DjangoProjects\\\\e3dady; python manage.py seed_data --reset)"
+    ]
+  }
+}

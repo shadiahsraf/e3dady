@@ -1,0 +1,104 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}ترتيب الفرق - E3dady Cup{% endblock %}
+
+{% block extra_head %}
+<style>
+    .team-rank-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        padding: 14px 12px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.06);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (min-width: 640px) {
+        .team-rank-card { padding: 24px; border-radius: 16px; }
+    }
+    .team-rank-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, var(--tc, #3b82f6) 0%, transparent 50%);
+        opacity: 0.1;
+        pointer-events: none;
+    }
+    .team-rank-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .points-display {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 900;
+        line-height: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-5 sm:mb-8">
+        <h1 class="text-2xl sm:text-4xl md:text-5xl font-black neon-gold font-cairo">ترتيب الفرق</h1>
+        <p class="text-white/40 mt-1 sm:mt-2 text-xs sm:text-sm">من هيكسب الكأس؟</p>
+    </div>
+    <div id="teams-board" class="space-y-3 sm:space-y-4"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var RANK_ICONS = { 1: '🥇', 2: '🥈', 3: '🥉' };
+    var RANK_COLORS = { 1: '#fbbf24', 2: '#94a3b8', 3: '#f97316' };
+
+    function render(data) {
+        var board = document.getElementById('teams-board');
+        if (!board || !data.teams) return;
+        board.innerHTML = data.teams.map(function(t, i) {
+            var rank = i + 1;
+            var icon = RANK_ICONS[rank] || rank;
+            var color = RANK_COLORS[rank] || 'rgba(255,255,255,0.3)';
+            return '<div class="team-rank-card" style="--tc:' + t.primary + ';">' +
+                '<div class="flex items-center gap-3 sm:gap-5">' +
+                    '<div class="text-2xl sm:text-4xl font-black min-w-[40px] sm:min-w-[56px] text-center" style="color:' + color + '">' + icon + '</div>' +
+                    '<div class="text-2xl sm:text-4xl">' + t.flag + '</div>' +
+                    '<div class="flex-1 min-w-0">' +
+                        '<div class="text-lg sm:text-2xl font-black truncate">' + t.name_ar + '</div>' +
+                    '</div>' +
+                    '<div class="text-left flex-shrink-0">' +
+                        '<div class="points-display" style="color:' + t.primary + '">' + t.total + '</div>' +
+                        '<div class="text-[10px] sm:text-xs text-white/40">نقطة</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+
+        try {
+            if (typeof gsap !== 'undefined') {
+                gsap.fromTo('#teams-board .team-rank-card',
+                    { y: 30, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.5, stagger: 0.1 });
+            }
+        } catch(e) {}
+    }
+
+    function fetchData() {
+        fetch('/api/leaderboard/').then(function(r) { return r.json(); }).then(render).catch(function() {});
+    }
+
+    fetchData();
+    setInterval(fetchData, 5000);
+
+    try {
+        if (typeof YC !== 'undefined') {
+            YC.onWSMessage(function(msg) {
+                if (msg.event === 'leaderboard' || msg.event === 'scan' || msg.event === 'session') fetchData();
+            });
+        }
+    } catch(e) {}
+})();
+</script>
+{% endblock %}

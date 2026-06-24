@@ -1,0 +1,198 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}البث المباشر - E3dady Cup{% endblock %}
+
+{% block extra_head %}
+<style>
+    .live-badge {
+        background: #ef4444;
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        animation: livePulse 1.5s ease-in-out infinite;
+        display: inline-block;
+    }
+    @keyframes livePulse {
+        0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+        50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    }
+    .team-header-text {
+        font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+        font-weight: 900;
+        text-shadow: 0 0 20px var(--team-primary, #fff);
+    }
+    .particle-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .particle {
+        position: absolute; width: 3px; height: 3px; border-radius: 50%; opacity: 0;
+        animation: particleFloat 4s ease-in-out infinite;
+    }
+    @keyframes particleFloat {
+        0% { opacity: 0; transform: translateY(100%) scale(0); }
+        20% { opacity: 0.8; }
+        80% { opacity: 0.3; }
+        100% { opacity: 0; transform: translateY(-200px) scale(1.5); }
+    }
+    .player-row {
+        padding: 8px 12px; border-radius: 10px;
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04);
+        display: flex; align-items: center; justify-content: space-between;
+        font-weight: 600; font-size: 0.9rem; transition: all 0.4s ease;
+    }
+    .player-row.checked {
+        background: linear-gradient(90deg, rgba(34,197,94,0.2), rgba(34,197,94,0.05));
+        border-color: rgba(34,197,94,0.4);
+    }
+    .player-row.new-check {
+        animation: checkSlide 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes checkSlide {
+        from { transform: translateX(40px); opacity: 0.5; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    .check-dot {
+        width: 22px; height: 22px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; transition: all 0.4s ease;
+    }
+    .check-dot.done {
+        background: rgba(34,197,94,0.3); color: #4ade80;
+        box-shadow: 0 0 10px rgba(34,197,94,0.3);
+    }
+    .check-dot.pending { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.15); }
+</style>
+{% endblock %}
+
+{% block nav %}
+<div class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3"
+     style="background: linear-gradient(180deg, rgba(0,0,0,0.7), transparent);">
+    <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+        <span class="text-lg sm:text-2xl">⚽</span>
+        <span class="font-black text-sm sm:text-xl neon-gold font-cairo truncate">E3DADY CUP</span>
+        <span class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-red-400 flex-shrink-0">
+            <span class="live-badge"></span> LIVE
+        </span>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+        <button onclick="toggleFullscreen()" class="btn-secondary text-[10px] sm:text-xs py-1.5 px-2 sm:py-2 sm:px-3">ملء الشاشة</button>
+        <a href="{% url 'leaderboard' %}" class="hidden sm:inline text-xs text-white/40 hover:text-white/70">الترتيب</a>
+        <a href="{% url 'team_view' %}" class="hidden sm:inline text-xs text-white/40 hover:text-white/70">عرض الفرق</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block main_class %}px-0 py-0{% endblock %}
+
+{% block content %}
+<div class="pt-16 pb-20 px-4 w-full">
+    <div id="teams-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 min-h-[80vh] w-full">
+        <div class="col-span-full flex items-center justify-center text-white/30 text-xl py-20">جاري التحميل...</div>
+    </div>
+</div>
+
+<div class="broadcast-bar">
+    <div class="broadcast-ticker">
+        <span class="ticker-label">E3DADY CUP</span>
+        <div class="ticker-scroll">
+            <span id="ticker-text" class="ticker-scroll-inner">مرحبا بيكم في مؤتمر الإعدادي ⚽</span>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var TEAM_COLORS = {
+        'France': { primary: '#1d4ed8', secondary: '#0b1d50' },
+        'Argentina': { primary: '#38bdf8', secondary: '#075985' },
+        'Spain': { primary: '#dc2626', secondary: '#7f1d1d' },
+        'Portugal': { primary: '#15803d', secondary: '#14532d' },
+    };
+
+    var currentData = null;
+    var knownChecked = {};
+
+    function buildColumn(team) {
+        var tc = TEAM_COLORS[team.name] || { primary: team.primary, secondary: team.secondary || '#1e293b' };
+        var checkedCount = team.members.filter(function(m) { return m.checked; }).length;
+
+        var rows = team.members.map(function(m) {
+            var key = team.id + '-' + m.id;
+            var isNew = m.checked && !knownChecked[key];
+            if (m.checked) knownChecked[key] = true;
+
+            return '<div class="player-row ' + (m.checked ? 'checked' : '') + ' ' + (isNew ? 'new-check' : '') + '">' +
+                '<span>' + m.name + '</span>' +
+                '<span class="check-dot ' + (m.checked ? 'done' : 'pending') + '">' +
+                    (m.checked ? '✓' : '○') +
+                '</span>' +
+            '</div>';
+        }).join('');
+
+        var particles = '';
+        for (var i = 0; i < 6; i++) {
+            particles += '<div class="particle" style="left:' + (Math.random()*100) + '%;animation-delay:' + (Math.random()*4) + 's;background:' + tc.primary + ';"></div>';
+        }
+
+        return '<div class="team-column" style="--team-primary:' + tc.primary + ';--team-secondary:' + tc.secondary + ';">' +
+            '<div class="particle-container">' + particles + '</div>' +
+            '<div class="text-center mb-4 relative z-10">' +
+                '<div class="text-3xl mb-1">' + team.flag + '</div>' +
+                '<div class="team-header-text" style="--team-primary:' + tc.primary + ';">' + team.name_ar + '</div>' +
+                '<div class="text-sm font-bold mt-1" style="color:' + tc.primary + '">' + team.total_points + ' نقطة</div>' +
+                '<div class="text-xs text-white/40 mt-1">' + checkedCount + '/' + team.members.length + ' حاضرين</div>' +
+            '</div>' +
+            '<div class="flex flex-col gap-2 flex-1 relative z-10 overflow-y-auto" style="scrollbar-width:thin;">' +
+                rows +
+            '</div>' +
+        '</div>';
+    }
+
+    function render(data) {
+        var grid = document.getElementById('teams-grid');
+        if (!grid || !data.teams) return;
+        currentData = data;
+        grid.innerHTML = data.teams.map(buildColumn).join('');
+    }
+
+    var retries = 0;
+    function fetchData() {
+        fetch('/api/live/')
+            .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function(data) { retries = 0; render(data); })
+            .catch(function() {
+                retries++;
+                if (!currentData) {
+                    var grid = document.getElementById('teams-grid');
+                    if (grid) grid.innerHTML = '<div class="col-span-full text-center text-white/30 py-20">⚽ جاري الاتصال... (' + retries + ')</div>';
+                }
+                if (retries < 10) setTimeout(fetchData, 2000);
+            });
+    }
+
+    fetchData();
+    setInterval(fetchData, 5000);
+
+    try {
+        if (typeof YC !== 'undefined') {
+            YC.onWSMessage(function(msg) {
+                if (msg.event === 'scan' || msg.event === 'leaderboard' || msg.event === 'session') fetchData();
+            });
+        }
+    } catch(e) {}
+
+    window.toggleFullscreen = function() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    };
+
+    setInterval(function() {
+        if (!currentData || !currentData.teams) return;
+        var parts = currentData.teams.map(function(t) { return t.flag + ' ' + t.name_ar + ': ' + t.total_points + ' نقطة'; });
+        var el = document.getElementById('ticker-text');
+        if (el) el.textContent = parts.join('   •   ');
+    }, 8000);
+})();
+</script>
+{% endblock %}

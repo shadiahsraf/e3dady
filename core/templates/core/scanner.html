@@ -1,0 +1,177 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}الماسح - E3dady Cup{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+    .scanner-card {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 20px;
+    }
+    .points-btn {
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 1.5rem;
+        font-weight: 900;
+        cursor: pointer;
+        border: 3px solid rgba(255,255,255,0.1);
+        transition: all 0.2s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(255,255,255,0.1);
+        text-align: center;
+    }
+    .points-btn:active { transform: scale(0.93); }
+    .points-btn.plus {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.3);
+    }
+    .points-btn.plus:hover, .points-btn.plus:active {
+        background: rgba(34, 197, 94, 0.3);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+    .points-btn.minus {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    .points-btn.minus:hover, .points-btn.minus:active {
+        background: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    .team-scan-banner {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+        border: 2px solid rgba(139, 92, 246, 0.4);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <!-- QR Scanner -->
+    <div class="scanner-card mb-4">
+        <div id="qr-reader" class="rounded-2xl overflow-hidden bg-black mb-3" style="min-height:200px;"></div>
+        <div class="flex gap-2">
+            <button id="btn-start" class="btn-primary flex-1 py-3 text-sm">شغّل الكاميرا</button>
+            <button id="btn-stop" class="btn-secondary flex-1 py-3 text-sm hidden">وقّف</button>
+        </div>
+        <div class="mt-3">
+            <div class="flex gap-2">
+                <input id="manual-code" type="text" placeholder="اكتب الكود..."
+                       class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white font-mono uppercase tracking-wider text-sm">
+                <button id="btn-manual" onclick="if(typeof scannerDoManualSearch==='function')scannerDoManualSearch()" class="btn-secondary px-4 py-2.5 text-sm font-bold">ابحث</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ INDIVIDUAL SCAN CARD ═══ -->
+    <div id="individual-card" class="scanner-card mb-4 hidden">
+        <div class="flex items-center gap-3 mb-4">
+            <div id="p-flag" class="text-5xl">🏳️</div>
+            <div class="flex-1">
+                <div id="p-name" class="text-xl font-black"></div>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="p-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold"></span>
+                    <span class="text-xs text-white/40 font-mono" id="p-code"></span>
+                </div>
+            </div>
+            <div class="text-left">
+                <div class="text-[10px] text-white/40">النقط الكلية</div>
+                <div id="p-points" class="text-3xl font-black text-amber-400">0</div>
+            </div>
+        </div>
+
+        <!-- Location dropdown -->
+        <div class="mb-4">
+            <div class="text-xs text-white/50 mb-1">المكان</div>
+            <select id="individual-location" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm">
+                <option value="qa3a_1">قاعة 1</option>
+                <option value="qa3a_2">قاعة 2</option>
+                <option value="qa3a_3">قاعة 3</option>
+                <option value="qa3a_4">قاعة 4</option>
+                <option value="qa3a_5">قاعة 5</option>
+                <option value="qa3a_6">قاعة 6</option>
+            </select>
+        </div>
+
+        <!-- Points input -->
+        <div class="mb-3">
+            <div class="text-xs text-white/50 mb-1">عدد النقاط</div>
+            <div class="flex items-center gap-2">
+                <button class="points-btn minus flex-shrink-0 !p-3 !text-lg" onclick="adjustPoints('individual-points', -1)">−</button>
+                <input id="individual-points" type="number" value="1" min="-999" max="999"
+                       class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-3 text-white text-center text-2xl font-black"
+                       style="-moz-appearance:textfield;">
+                <button class="points-btn plus flex-shrink-0 !p-3 !text-lg" onclick="adjustPoints('individual-points', 1)">+</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <button class="points-btn plus !text-base !py-3" onclick="sendCustomPoints('individual')">إضافة ✓</button>
+            <button class="points-btn minus !text-base !py-3" onclick="sendCustomPoints('individual', true)">خصم ✗</button>
+        </div>
+
+        <div id="p-message" class="text-center text-sm text-amber-400 font-bold mb-3 hidden"></div>
+    </div>
+
+    <!-- ═══ TEAM SCAN CARD ═══ -->
+    <div id="team-card" class="scanner-card mb-4 hidden">
+        <div class="team-scan-banner mb-4">
+            <div id="t-flag" class="text-5xl mb-1">🏳️</div>
+            <div id="t-name" class="text-2xl font-black"></div>
+            <div class="text-sm text-white/50 mt-1">
+                <span id="t-count">0</span> لاعب
+            </div>
+            <div class="mt-2">
+                <span class="text-xs text-white/40">إجمالي النقط:</span>
+                <span id="t-points" class="text-xl font-black text-amber-400 mr-1">0</span>
+            </div>
+        </div>
+
+        <!-- Location dropdown -->
+        <div class="mb-4">
+            <div class="text-xs text-white/50 mb-1">الملعب</div>
+            <select id="team-location" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm">
+                <option value="mal3ab_1">ملعب 1</option>
+                <option value="mal3ab_2">ملعب 2</option>
+                <option value="mal3ab_3">ملعب 3</option>
+                <option value="mal3ab_4">ملعب 4</option>
+                <option value="mal3ab_5">ملعب 5</option>
+            </select>
+        </div>
+
+        <!-- Points input for team -->
+        <div class="mb-3">
+            <div class="text-xs text-white/50 mb-1">عدد النقاط لكل لاعب</div>
+            <div class="flex items-center gap-2">
+                <button class="points-btn minus flex-shrink-0 !p-3 !text-lg" onclick="adjustPoints('team-points', -1)">−</button>
+                <input id="team-points" type="number" value="1" min="-999" max="999"
+                       class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-3 text-white text-center text-2xl font-black"
+                       style="-moz-appearance:textfield;">
+                <button class="points-btn plus flex-shrink-0 !p-3 !text-lg" onclick="adjustPoints('team-points', 1)">+</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <button class="points-btn plus !text-base !py-3" onclick="sendCustomPoints('team')">إضافة للفريق ✓</button>
+            <button class="points-btn minus !text-base !py-3" onclick="sendCustomPoints('team', true)">خصم من الفريق ✗</button>
+        </div>
+
+        <div id="t-message" class="text-center text-sm text-green-400 font-bold mb-3 hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block inline_data %}
+const CSRF_TOKEN = '{{ csrf_token }}';
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/scanner.js' %}"></script>
+{% endblock %}
