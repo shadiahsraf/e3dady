@@ -6,15 +6,21 @@ SECRET_KEY = 'django-insecure-change-me-in-production-youth-conference-2026'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+try:
+    import channels
+    HAS_CHANNELS = True
+except ImportError:
+    HAS_CHANNELS = False
+
 INSTALLED_APPS = [
-    'daphne',
+    *(['daphne'] if HAS_CHANNELS else []),
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
+    *(['channels'] if HAS_CHANNELS else []),
     'rest_framework',
     'core',
 ]
@@ -47,13 +53,15 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = 'config.asgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+if HAS_CHANNELS:
+    ASGI_APPLICATION = 'config.asgi.application'
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 DATABASES = {
     'default': {

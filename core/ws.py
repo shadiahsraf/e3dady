@@ -1,9 +1,17 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+try:
+    from asgiref.sync import async_to_sync
+    from channels.layers import get_channel_layer
+    HAS_CHANNELS = True
+except ImportError:
+    HAS_CHANNELS = False
 
 
 def broadcast(event_type, data):
+    if not HAS_CHANNELS:
+        return
     channel_layer = get_channel_layer()
+    if not channel_layer:
+        return
     async_to_sync(channel_layer.group_send)(
         'live',
         {
