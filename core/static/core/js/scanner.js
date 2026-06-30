@@ -34,9 +34,9 @@
             var el = document.createElement('div');
             el.className = 'toast toast-' + (kind || 'success');
             el.textContent = msg;
-            el.style.cssText = 'padding:12px 28px;border-radius:12px;font-weight:700;font-size:0.95rem;min-width:200px;text-align:center;background:rgba(15,23,42,0.9);color:#fff;border:1px solid rgba(255,255,255,0.2);';
-            if (kind === 'error') el.style.borderColor = 'rgba(239,68,68,0.5)';
-            if (kind === 'success') el.style.borderColor = 'rgba(34,197,94,0.5)';
+            el.style.cssText = 'padding:12px 28px;border-radius:12px;font-weight:700;font-size:0.95rem;min-width:200px;text-align:center;background:rgba(13,59,28,0.9);color:#ffebcd;border:1px solid rgba(231,180,67,0.2);';
+            if (kind === 'error') el.style.borderColor = 'rgba(192,57,43,0.5)';
+            if (kind === 'success') el.style.borderColor = 'rgba(231,180,67,0.5)';
             container.appendChild(el);
             setTimeout(function() { try { el.remove(); } catch(e2) {} }, 2500);
         } catch(e) {

@@ -10,9 +10,9 @@
         overflow: hidden;
         border-radius: 14px;
         padding: 14px 12px;
-        background: rgba(15, 23, 42, 0.6);
+        background: rgba(13, 59, 28, 0.6);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid rgba(231, 180, 67, 0.1);
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     @media (min-width: 640px) {
@@ -22,7 +22,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, var(--tc, #3b82f6) 0%, transparent 50%);
+        background: linear-gradient(135deg, var(--tc, #e7b443) 0%, transparent 50%);
         opacity: 0.1;
         pointer-events: none;
     }
@@ -52,7 +52,7 @@
 <script>
 (function() {
     var RANK_ICONS = { 1: '🥇', 2: '🥈', 3: '🥉' };
-    var RANK_COLORS = { 1: '#fbbf24', 2: '#94a3b8', 3: '#f97316' };
+    var RANK_COLORS = { 1: '#e7b443', 2: '#94a3b8', 3: '#d4a03a' };
 
     function render(data) {
         var board = document.getElementById('teams-board');

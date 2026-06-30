@@ -181,8 +181,8 @@ window.YC = (function () {
         // Football (icosahedron with pentagon pattern)
         const ballGeo = new THREE.IcosahedronGeometry(0.8, 1);
         const ballMat = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            emissive: 0x111111,
+            color: 0xffebcd,
+            emissive: 0x0d3b1c,
             shininess: 80,
             wireframe: false,
             transparent: true,
@@ -195,7 +195,7 @@ window.YC = (function () {
         // Wireframe overlay for football effect
         const wireGeo = new THREE.IcosahedronGeometry(0.82, 1);
         const wireMat = new THREE.MeshBasicMaterial({
-            color: 0x3b82f6,
+            color: 0xe7b443,
             wireframe: true,
             transparent: true,
             opacity: 0.08,
@@ -210,10 +210,10 @@ window.YC = (function () {
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
         const particleColors = [
-            [0.23, 0.51, 0.96],  // blue
-            [0.96, 0.62, 0.04],  // gold
-            [0.55, 0.36, 0.96],  // purple
-            [0.13, 0.83, 0.55],  // green
+            [0.05, 0.23, 0.11],  // dark green
+            [0.91, 0.71, 0.26],  // orange
+            [1.0, 0.92, 0.80],   // yellow/cream
+            [0.13, 0.46, 0.22],  // medium green
         ];
 
         for (let i = 0; i < particleCount; i++) {
@@ -241,7 +241,7 @@ window.YC = (function () {
         // Stadium spotlight beams
         const spotGeo = new THREE.ConeGeometry(0.3, 6, 8, 1, true);
         const spotMat = new THREE.MeshBasicMaterial({
-            color: 0xfbbf24,
+            color: 0xe7b443,
             transparent: true,
             opacity: 0.03,
             side: THREE.DoubleSide,
@@ -257,8 +257,8 @@ window.YC = (function () {
         }
 
         // Ambient + directional light
-        scene.add(new THREE.AmbientLight(0x404080, 0.5));
-        const dirLight = new THREE.DirectionalLight(0xfbbf24, 0.3);
+        scene.add(new THREE.AmbientLight(0x0d3b1c, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xe7b443, 0.3);
         dirLight.position.set(5, 5, 5);
         scene.add(dirLight);
 

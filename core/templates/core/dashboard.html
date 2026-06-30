@@ -15,19 +15,19 @@
     <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
         <div class="stat-card text-center p-3 sm:p-5">
-            <div class="text-2xl sm:text-3xl font-black text-blue-400">{{ participants|length }}</div>
+            <div class="text-2xl sm:text-3xl font-black font-black" style="color:#e7b443">{{ participants|length }}</div>
             <div class="text-[10px] sm:text-xs text-white/40 mt-1">مشترك</div>
         </div>
         <div class="stat-card text-center p-3 sm:p-5">
-            <div class="text-2xl sm:text-3xl font-black text-amber-400">{{ teams|length }}</div>
+            <div class="text-2xl sm:text-3xl font-black font-bold" style="color:#e7b443">{{ teams|length }}</div>
             <div class="text-[10px] sm:text-xs text-white/40 mt-1">فريق</div>
         </div>
         <div class="stat-card text-center p-3 sm:p-5">
-            <div class="text-2xl sm:text-3xl font-black text-green-400">{{ activities|length }}</div>
+            <div class="text-2xl sm:text-3xl font-black font-bold" style="color:#e7b443">{{ activities|length }}</div>
             <div class="text-[10px] sm:text-xs text-white/40 mt-1">نشاط</div>
         </div>
         <div class="stat-card text-center p-3 sm:p-5">
-            <div class="text-2xl sm:text-3xl font-black text-purple-400">
+            <div class="text-2xl sm:text-3xl font-black font-bold" style="color:#ffebcd">
                 {% if active_session %}{{ active_session.activity.label }}{% else %}—{% endif %}
             </div>
             <div class="text-[10px] sm:text-xs text-white/40 mt-1">الجلسة الحالية</div>
@@ -37,7 +37,7 @@
     <!-- Session Management -->
     <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
         <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
-            <span class="text-amber-400">⚡</span> إدارة الجلسات
+            <span class="font-bold" style="color:#e7b443">⚡</span> إدارة الجلسات
         </h2>
         <div class="flex flex-col sm:grid sm:grid-cols-3 gap-3">
             <div>
@@ -63,7 +63,7 @@
     <!-- Add participant -->
     <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
         <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
-            <span class="text-green-400">+</span> إضافة مشترك
+            <span class="font-bold" style="color:#e7b443">+</span> إضافة مشترك
         </h2>
         <div class="flex flex-col sm:flex-row gap-2">
             <input id="new-name" type="text" placeholder="اسم المشترك..."
@@ -83,7 +83,7 @@
     {% if participants %}
     <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
         <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
-            <span class="text-purple-400">👥</span> المشتركين ({{ participants|length }})
+            <span class="font-bold" style="color:#ffebcd">👥</span> المشتركين ({{ participants|length }})
         </h2>
         <div class="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
             <table class="w-full text-xs sm:text-sm min-w-[400px]">
@@ -100,7 +100,7 @@
                         <td class="py-2 px-1 sm:px-2 font-bold">{{ p.name }}</td>
                         <td class="py-2 px-1 sm:px-2">{{ p.team.flag_emoji }} {{ p.team.name_ar }}</td>
                         <td class="py-2 px-1 sm:px-2 font-mono text-white/40 text-[10px] sm:text-xs">{{ p.unique_code }}</td>
-                        <td class="py-2 px-1 sm:px-2 font-bold text-amber-400">{{ p.total_points }}</td>
+                        <td class="py-2 px-1 sm:px-2 font-bold font-bold" style="color:#e7b443">{{ p.total_points }}</td>
                         <td class="py-2 px-1 sm:px-2 text-center">
                             <button onclick="deleteParticipant({{ p.id }}, '{{ p.name }}')"
                                     class="text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg px-2 py-1 text-xs font-bold transition-colors">✕</button>
@@ -116,7 +116,7 @@
     <!-- Scan Logs -->
     <div class="glass p-3 sm:p-5 mb-4 sm:mb-6">
         <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4 flex items-center gap-2">
-            <span class="text-blue-400">📋</span> سجل المسح
+            <span class="font-black" style="color:#e7b443">📋</span> سجل المسح
         </h2>
         <div class="flex gap-2 mb-3 sm:mb-4 flex-wrap">
             <select id="log-team" class="flex-1 sm:flex-none bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white text-sm">
@@ -157,7 +157,7 @@
                         <td class="py-2 px-1 sm:px-2 text-white/40 text-xs">{{ l.created_at|time:"H:i:s" }}</td>
                         <td class="py-2 px-1 sm:px-2 font-bold">{{ l.participant.name|default:"—" }}</td>
                         <td class="py-2 px-1 sm:px-2">{{ l.team.name_ar|default:"—" }}</td>
-                        <td class="py-2 px-1 sm:px-2 font-bold {% if l.points_change > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        <td class="py-2 px-1 sm:px-2 font-bold" style="color:{% if l.points_change > 0 %}#e7b443{% else %}#e74c3c{% endif %}">
                             {{ l.points_change|stringformat:"+d" }}
                         </td>
                         <td class="py-2 px-1 sm:px-2 text-xs text-white/40">{{ l.get_session_type_display }}</td>
@@ -265,13 +265,13 @@ function filterLogs() {
         if (!d.ok) return;
         var tbody = document.getElementById('logs-tbody');
         tbody.innerHTML = d.logs.map(function(l) {
-            var cls = l.points_change > 0 ? 'text-green-400' : 'text-red-400';
+            var color = l.points_change > 0 ? '#e7b443' : '#e74c3c';
             var sign = l.points_change > 0 ? '+' : '';
             return '<tr class="border-b border-white/5">' +
                 '<td class="py-2 px-2 text-white/40 text-xs">' + l.time + '</td>' +
                 '<td class="py-2 px-2 font-bold">' + (l.participant || '—') + '</td>' +
                 '<td class="py-2 px-2">' + (l.team || '—') + '</td>' +
-                '<td class="py-2 px-2 font-bold ' + cls + '">' + sign + l.points_change + '</td>' +
+                '<td class="py-2 px-2 font-bold" style="color:' + color + '">' + sign + l.points_change + '</td>' +
                 '<td class="py-2 px-2 text-xs text-white/40">' + l.session_type + '</td>' +
                 '<td class="py-2 px-2 text-xs text-white/40">' + l.location + '</td>' +
             '</tr>';

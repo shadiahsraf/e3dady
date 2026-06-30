@@ -13,7 +13,7 @@
     </div>
 
     <!-- Team QR Codes -->
-    <h2 class="text-lg font-bold mb-3 text-amber-400 print:text-black">QR الفرق</h2>
+    <h2 class="text-lg font-bold mb-3 print:text-black" style="color:#e7b443">QR الفرق</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6 sm:mb-8 print:grid-cols-4 print:gap-2">
         {% for t in teams %}
         {% if t.team_code %}
@@ -21,7 +21,7 @@
              style="border-top: 4px solid {{ t.primary_hex }}">
             <div class="text-xl sm:text-2xl mb-0.5 sm:mb-1">{{ t.flag_emoji }}</div>
             <div class="font-black text-xs sm:text-sm">{{ t.name_ar }}</div>
-            <div class="text-[9px] sm:text-[10px] text-purple-600 font-bold mb-0.5 sm:mb-1">فريق كامل</div>
+            <div class="text-[9px] sm:text-[10px] font-bold mb-0.5 sm:mb-1" style="color:#0d3b1c">فريق كامل</div>
             <img src="{% url 'qr_team_image' t.team_code %}" alt="QR" class="mx-auto w-full max-w-[120px] sm:max-w-[150px]" loading="lazy">
             <div class="font-mono text-[9px] sm:text-[10px] mt-0.5 sm:mt-1 text-slate-400">{{ t.team_code }}</div>
         </div>

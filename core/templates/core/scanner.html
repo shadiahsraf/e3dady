@@ -7,9 +7,9 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
     .scanner-card {
-        background: rgba(15, 23, 42, 0.8);
+        background: rgba(13, 59, 28, 0.85);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid rgba(231, 180, 67, 0.15);
         border-radius: 20px;
         padding: 20px;
     }
@@ -19,34 +19,34 @@
         font-size: 1.5rem;
         font-weight: 900;
         cursor: pointer;
-        border: 3px solid rgba(255,255,255,0.1);
+        border: 3px solid rgba(231, 180, 67, 0.15);
         transition: all 0.2s ease;
         user-select: none;
-        -webkit-tap-highlight-color: rgba(255,255,255,0.1);
+        -webkit-tap-highlight-color: rgba(231, 180, 67, 0.2);
         text-align: center;
     }
     .points-btn:active { transform: scale(0.93); }
     .points-btn.plus {
-        background: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-        border-color: rgba(34, 197, 94, 0.3);
+        background: rgba(231, 180, 67, 0.15);
+        color: #e7b443;
+        border-color: rgba(231, 180, 67, 0.3);
     }
     .points-btn.plus:hover, .points-btn.plus:active {
-        background: rgba(34, 197, 94, 0.3);
-        box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        background: rgba(231, 180, 67, 0.3);
+        box-shadow: 0 0 20px rgba(231, 180, 67, 0.3);
     }
     .points-btn.minus {
-        background: rgba(239, 68, 68, 0.15);
-        color: #f87171;
-        border-color: rgba(239, 68, 68, 0.3);
+        background: rgba(192, 57, 43, 0.15);
+        color: #e74c3c;
+        border-color: rgba(192, 57, 43, 0.3);
     }
     .points-btn.minus:hover, .points-btn.minus:active {
-        background: rgba(239, 68, 68, 0.3);
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        background: rgba(192, 57, 43, 0.3);
+        box-shadow: 0 0 20px rgba(192, 57, 43, 0.3);
     }
     .team-scan-banner {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
-        border: 2px solid rgba(139, 92, 246, 0.4);
+        background: linear-gradient(135deg, rgba(231, 180, 67, 0.15), rgba(13, 59, 28, 0.3));
+        border: 2px solid rgba(231, 180, 67, 0.3);
         border-radius: 16px;
         padding: 16px;
         text-align: center;
@@ -85,7 +85,7 @@
             </div>
             <div class="text-left">
                 <div class="text-[10px] text-white/40">النقط الكلية</div>
-                <div id="p-points" class="text-3xl font-black text-amber-400">0</div>
+                <div id="p-points" class="text-3xl font-black font-black" style="color:#e7b443">0</div>
             </div>
         </div>
 
@@ -118,7 +118,7 @@
             <button class="points-btn minus !text-base !py-3" onclick="sendCustomPoints('individual', true)">خصم ✗</button>
         </div>
 
-        <div id="p-message" class="text-center text-sm text-amber-400 font-bold mb-3 hidden"></div>
+        <div id="p-message" class="text-center text-sm font-bold" style="color:#e7b443 mb-3 hidden"></div>
     </div>
 
     <!-- ═══ TEAM SCAN CARD ═══ -->
@@ -131,7 +131,7 @@
             </div>
             <div class="mt-2">
                 <span class="text-xs text-white/40">إجمالي النقط:</span>
-                <span id="t-points" class="text-xl font-black text-amber-400 mr-1">0</span>
+                <span id="t-points" class="text-xl font-black mr-1" style="color:#e7b443">0</span>
             </div>
         </div>
 
@@ -163,7 +163,7 @@
             <button class="points-btn minus !text-base !py-3" onclick="sendCustomPoints('team', true)">خصم من الفريق ✗</button>
         </div>
 
-        <div id="t-message" class="text-center text-sm text-green-400 font-bold mb-3 hidden"></div>
+        <div id="t-message" class="text-center text-sm font-bold mb-3 hidden" style="color:#e7b443"></div>
     </div>
 </div>
 {% endblock %}
