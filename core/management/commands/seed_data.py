@@ -21,9 +21,9 @@ TEAMS_DATA = [
         'flag_emoji': '🇦🇷',
     },
     {
-        'name': 'Spain', 'name_ar': 'إسبانيا', 'color': 'red',
-        'primary_hex': '#dc2626', 'secondary_hex': '#7f1d1d',
-        'flag_emoji': '🇪🇸',
+        'name': 'Brazil', 'name_ar': 'البرازيل', 'color': 'yellow',
+        'primary_hex': '#f5c518', 'secondary_hex': '#1a5e1f',
+        'flag_emoji': '🇧🇷',
     },
     {
         'name': 'Portugal', 'name_ar': 'البرتغال', 'color': 'green',
