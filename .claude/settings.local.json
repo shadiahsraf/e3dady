@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell($env:PYTHONIOENCODING = 'utf-8'; cd D:\\\\DjangoProjects\\\\e3dady; python manage.py seed_data --reset)"
+      "PowerShell($env:PYTHONIOENCODING = 'utf-8'; cd D:\\\\DjangoProjects\\\\e3dady; python manage.py seed_data --reset)",
+      "PowerShell(python \"C:\\\\Users\\\\shadi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--DjangoProjects-e3dady\\\\323e4671-db97-4729-b942-59e574b9a2c3\\\\scratchpad\\\\read_pdf.py\")",
+      "PowerShell($env:PYTHONIOENCODING = 'utf-8'; python \"C:\\\\Users\\\\shadi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--DjangoProjects-e3dady\\\\323e4671-db97-4729-b942-59e574b9a2c3\\\\scratchpad\\\\decode_qr.py\")"
     ]
   }
 }
