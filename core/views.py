@@ -200,21 +200,39 @@ def api_record_scan(request):
         })
     else:
         t = result['team']
-        logs = services.record_team_scan(t, points_change, location, scanned_by)
-        t.refresh_from_db()
-        return JsonResponse({
-            'ok': True,
-            'scan_type': 'team',
-            'points_change': points_change,
-            'team': {
-                'id': t.id,
-                'name_ar': t.name_ar,
-                'flag': t.flag_emoji,
-                'total_points': t.total_points,
-                'members_affected': len(logs),
-            },
-            'message': 'تم تسجيل الفريق بالكامل',
-        })
+        team_mode = request.POST.get('team_mode', 'each_player')
+        if team_mode == 'team_only':
+            log = services.record_team_only_scan(t, points_change, location, scanned_by)
+            t.refresh_from_db()
+            return JsonResponse({
+                'ok': True,
+                'scan_type': 'team',
+                'points_change': points_change,
+                'team': {
+                    'id': t.id,
+                    'name_ar': t.name_ar,
+                    'flag': t.flag_emoji,
+                    'total_points': t.total_points,
+                    'members_affected': 0,
+                },
+                'message': f'تم إضافة {points_change} نقطة للفريق',
+            })
+        else:
+            logs = services.record_team_scan(t, points_change, location, scanned_by)
+            t.refresh_from_db()
+            return JsonResponse({
+                'ok': True,
+                'scan_type': 'team',
+                'points_change': points_change,
+                'team': {
+                    'id': t.id,
+                    'name_ar': t.name_ar,
+                    'flag': t.flag_emoji,
+                    'total_points': t.total_points,
+                    'members_affected': len(logs),
+                },
+                'message': f'تم إضافة {points_change} نقطة لكل لاعب ({len(logs)} لاعب)',
+            })
 
 
 # ── API: Data feeds ──

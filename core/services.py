@@ -61,6 +61,31 @@ def record_team_scan(team, points_change, location, scanned_by=''):
     return logs
 
 
+@transaction.atomic
+def record_team_only_scan(team, points_change, location, scanned_by=''):
+    """Record points for the TEAM only (not distributed to individual players)."""
+    log = ScanLog.objects.create(
+        participant=None,
+        team=team,
+        points_change=points_change,
+        session_type=ScanLog.TEAM_SCAN,
+        location=location,
+        scanned_by=scanned_by,
+    )
+    team.recalculate_total()
+
+    try:
+        ws.broadcast_team_scan(team, points_change, location)
+    except Exception:
+        pass
+    try:
+        ws.broadcast_leaderboard(_build_leaderboard_data())
+    except Exception:
+        pass
+
+    return log
+
+
 def lookup_code(code):
     """Look up a code — could be a participant or a team."""
     try:

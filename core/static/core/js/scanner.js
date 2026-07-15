@@ -8,7 +8,7 @@
     var stopBtn = document.getElementById('btn-stop');
     var btnManual = document.getElementById('btn-manual');
 
-    var state = { code: null, scanType: null, lastScannedAt: 0 };
+    var state = { code: null, scanType: null, lastScannedAt: 0, teamMode: 'each_player' };
     var scanner = null;
     var scanning = false;
 
@@ -218,6 +218,23 @@
         }
     }
 
+    // ── Team mode toggle ──
+    window.setTeamMode = function(mode) {
+        state.teamMode = mode;
+        var btnEach = document.getElementById('mode-each');
+        var btnTeam = document.getElementById('mode-team');
+        var label = document.getElementById('team-points-label');
+        if (mode === 'team_only') {
+            if (btnTeam) btnTeam.classList.add('selected');
+            if (btnEach) btnEach.classList.remove('selected');
+            if (label) label.textContent = 'عدد النقاط للفريق';
+        } else {
+            if (btnEach) btnEach.classList.add('selected');
+            if (btnTeam) btnTeam.classList.remove('selected');
+            if (label) label.textContent = 'عدد النقاط لكل لاعب';
+        }
+    };
+
     // ── Adjust points (+ / - stepper buttons) ──
     window.adjustPoints = function(inputId, delta) {
         var input = document.getElementById(inputId);
@@ -251,6 +268,10 @@
         var bodyStr = 'code=' + encodeURIComponent(state.code) +
                       '&points=' + encodeURIComponent(String(pts)) +
                       '&location=' + encodeURIComponent(location);
+
+        if (type === 'team') {
+            bodyStr += '&team_mode=' + encodeURIComponent(state.teamMode);
+        }
 
         fetch('/api/scan/', {
             method: 'POST',

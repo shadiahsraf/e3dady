@@ -147,9 +147,24 @@
             </select>
         </div>
 
+        <!-- Team mode toggle -->
+        <div class="mb-3">
+            <div class="text-xs text-white/50 mb-1">نوع الإضافة</div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="mode-each" class="att-btn selected text-sm" onclick="setTeamMode('each_player')">
+                    لكل لاعب
+                    <div class="text-[10px] text-white/40 mt-0.5">النقط × عدد اللاعبين</div>
+                </button>
+                <button id="mode-team" class="att-btn text-sm" onclick="setTeamMode('team_only')">
+                    للفريق بس
+                    <div class="text-[10px] text-white/40 mt-0.5">النقط للفريق مرة واحدة</div>
+                </button>
+            </div>
+        </div>
+
         <!-- Points input for team -->
         <div class="mb-3">
-            <div class="text-xs text-white/50 mb-1">عدد النقاط لكل لاعب</div>
+            <div id="team-points-label" class="text-xs text-white/50 mb-1">عدد النقاط لكل لاعب</div>
             <div class="flex items-center gap-2">
                 <button class="points-btn minus flex-shrink-0 !p-3 !text-lg" onclick="adjustPoints('team-points', -1)">−</button>
                 <input id="team-points" type="number" value="1" min="-999" max="999"
