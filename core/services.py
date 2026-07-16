@@ -109,7 +109,9 @@ def get_team_scoreboard():
     """Returns teams sorted by total points."""
     teams = list(Team.objects.all())
     for t in teams:
-        total = t.participants.aggregate(s=Sum('total_points'))['s'] or 0
+        player_total = t.participants.aggregate(s=Sum('total_points'))['s'] or 0
+        team_only_total = ScanLog.objects.filter(team=t, participant__isnull=True).aggregate(s=Sum('points_change'))['s'] or 0
+        total = player_total + team_only_total
         t.computed_total = total
         if t.total_points != total:
             t.total_points = total
