@@ -5,9 +5,15 @@ from .models import Team, Participant, Activity, ScanLog, Session
 from . import ws
 
 
+def _recalc_team(team):
+    player_total = team.participants.aggregate(s=Sum('total_points'))['s'] or 0
+    team_only_total = ScanLog.objects.filter(team=team, participant__isnull=True).aggregate(s=Sum('points_change'))['s'] or 0
+    team.total_points = player_total + team_only_total
+    team.save(update_fields=['total_points'])
+
+
 @transaction.atomic
 def record_individual_scan(participant, points_change, location, scanned_by=''):
-    """Record a ±1 point scan for a single participant."""
     log = ScanLog.objects.create(
         participant=participant,
         team=participant.team,
@@ -17,7 +23,7 @@ def record_individual_scan(participant, points_change, location, scanned_by=''):
         scanned_by=scanned_by,
     )
     participant.recalculate_total()
-    participant.team.recalculate_total()
+    _recalc_team(participant.team)
 
     try:
         ws.broadcast_scan(participant, log)
@@ -33,7 +39,6 @@ def record_individual_scan(participant, points_change, location, scanned_by=''):
 
 @transaction.atomic
 def record_team_scan(team, points_change, location, scanned_by=''):
-    """Record a ±1 point scan for ALL members of a team."""
     logs = []
     for p in team.participants.all():
         log = ScanLog.objects.create(
@@ -47,7 +52,7 @@ def record_team_scan(team, points_change, location, scanned_by=''):
         logs.append(log)
         p.recalculate_total()
 
-    team.recalculate_total()
+    _recalc_team(team)
 
     try:
         ws.broadcast_team_scan(team, points_change, location)
@@ -63,7 +68,6 @@ def record_team_scan(team, points_change, location, scanned_by=''):
 
 @transaction.atomic
 def record_team_only_scan(team, points_change, location, scanned_by=''):
-    """Record points for the TEAM only (not distributed to individual players)."""
     log = ScanLog.objects.create(
         participant=None,
         team=team,
@@ -72,7 +76,7 @@ def record_team_only_scan(team, points_change, location, scanned_by=''):
         location=location,
         scanned_by=scanned_by,
     )
-    team.recalculate_total()
+    _recalc_team(team)
 
     try:
         ws.broadcast_team_scan(team, points_change, location)

@@ -18,8 +18,9 @@ class Team(models.Model):
 
     def recalculate_total(self):
         from django.db.models import Sum
-        total = self.participants.aggregate(s=Sum('total_points'))['s'] or 0
-        self.total_points = total
+        player_total = self.participants.aggregate(s=Sum('total_points'))['s'] or 0
+        team_only_total = self.scan_logs.filter(participant__isnull=True).aggregate(s=Sum('points_change'))['s'] or 0
+        self.total_points = player_total + team_only_total
         self.save(update_fields=['total_points'])
         return self.total_points
 

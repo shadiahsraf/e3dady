@@ -203,7 +203,6 @@ def api_record_scan(request):
         team_mode = request.POST.get('team_mode', 'each_player')
         if team_mode == 'team_only':
             log = services.record_team_only_scan(t, points_change, location, scanned_by)
-            t.refresh_from_db()
             return JsonResponse({
                 'ok': True,
                 'scan_type': 'team',
